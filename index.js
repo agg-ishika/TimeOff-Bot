@@ -280,6 +280,121 @@ framework.hears(
   0
 );
 
+/* On mention with command
+ex User enters @botname help, the bot will write back in markdown
+ *
+ * The framework.showHelp method will use the help phrases supplied with the previous
+ * framework.hears() commands
+*/
+framework.hears(
+  /apply pto|apply PTO|apply/i,
+  (bot, trigger) => {
+    console.log(`someone needs help! They asked ${trigger.text}`);
+    bot
+      .say(`Helloo ${trigger.person.displayName}.`)
+      //    .then(() => sendHelp(bot))
+      .then(() => bot.sendCard(
+        {
+          "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+          "type": "AdaptiveCard",
+          "version": "1.3",
+          "body": [
+            {
+              "type": "TextBlock",
+              "size": "Medium",
+              "weight": "Bolder",
+              "text": "Time-off Bot",
+              "horizontalAlignment": "Center"
+            },
+            {
+              "type": "Input.ChoiceSet",
+              "choices": [
+                {
+                  "title": "Vacation",
+                  "value": "vacation"
+                },
+                {
+                  "title": "Sick Time",
+                  "value": "sick"
+                }
+              ],
+              "placeholder": "Type",
+              "id": "leave_type",
+              "label": "Select the type of holiday",
+              "isRequired": true,
+              "errorMessage": "Type is required",
+              "value": "Vacation",
+              "style": "expanded"
+            },
+            {
+              "type": "Input.Date",
+              "placeholder": "Due Date",
+              "id": "leave_date",
+              "value": "D",
+              "label": "Select the Date",
+              "isRequired": true,
+              "errorMessage": "Date is required"
+            },
+            {
+              "type": "Input.ChoiceSet",
+              "choices": [
+                {
+                  "title": "Full Day",
+                  "value": "full day"
+                },
+                {
+                  "title": "1st Half ",
+                  "value": "first half"
+                },
+                {
+                  "title": "2nd Half ",
+                  "value": "second half"
+                }
+              ],
+              "placeholder": "Time",
+              "id": "leave_time",
+              "label": "Select the duration ",
+              "isRequired": true,
+              "errorMessage": "Duration is required",
+              "style": "expanded"
+            },
+            {
+              "type": "Input.Text",
+              "placeholder": "Reason (If Any)",
+              "isMultiline": true,
+              "maxLength": 0,
+              "id": "leave_reason"
+            }
+          ],
+          "actions": [
+            {
+              "type": "Action.Submit",
+              "title": "Submit",
+              "data": {
+                "cardType": "input",
+                "id": "inputTypesExample"
+              }
+            }
+          ]
+        },
+        "This is the fallback text if the client can't render this card"
+        )
+      )
+      .catch((e) => console.error(`Problem in help hander: ${e.message}`));
+  },
+  "**help**: (what you are reading now)",
+  0
+);
+
+// Process a submitted card
+framework.on('attachmentAction', (bot, trigger) => {
+  var response = trigger.attachmentAction;
+  console.log(`attachmentAction: ${response}`);
+  var inputs = response["inputs"];
+  var msg = `Your ${inputs.leave_time} ${inputs.leave_type} leave for ${inputs.leave_date} has been submitted`;
+  bot.say(msg);
+});
+
 /* On mention with unexpected bot command
    Its a good practice is to gracefully handle unexpected input
    Setting the priority to a higher number here ensures that other
